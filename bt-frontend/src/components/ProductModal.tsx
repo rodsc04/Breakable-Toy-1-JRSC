@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Box, TextField, Button, MenuItem } from "@mui/material";
+import {Modal, Box, TextField, Button, MenuItem, Autocomplete} from "@mui/material";
 import { Product } from "../types/Product";
 
 type Props = {
@@ -55,16 +55,19 @@ const ProductModal: React.FC<Props> = ({ open, onClose, onSave, categories, init
                     onChange={e => setName(e.target.value)}
                     required
                 />
-                <TextField
-                    label="Category"
-                    select
+                <Autocomplete
+                    freeSolo
+                    options={categories}
                     value={category}
-                    onChange={e => setCategory(e.target.value)}
-                    required
-                >
-                    {categories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
-                    <MenuItem value="">Create new...</MenuItem>
-                </TextField>
+                    onInputChange={(event, newInputValue) => setCategory(newInputValue)}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Category"
+                            required
+                        />
+                    )}
+                />
                 <TextField
                     label="Stock"
                     type="number"

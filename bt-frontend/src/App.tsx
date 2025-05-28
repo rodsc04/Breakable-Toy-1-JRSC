@@ -17,6 +17,8 @@ const Main = () => {
   const [editProduct, setEditProduct] = useState<Product | undefined>(undefined);
   const [filter, setFilter] = useState({ name: "", category: "", availability: "all" });
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<"name" | "category" | "price" | "quantity" | "expirationDate" | "">("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Filtering
   const filtered = products.filter(p =>
@@ -26,9 +28,42 @@ const Main = () => {
           (filter.availability === "in" && p.quantity > 0) ||
           (filter.availability === "out" && p.quantity === 0))
   );
+
+  // Sorting
+    const sorted = [...filtered].sort((a, b) => {
+        if (!sortBy) return 0;
+
+        let direction = sortOrder === "asc" ? 1 : -1;
+
+        if (sortBy === "expirationDate") {
+            const aDate = a.expirationDate ? new Date(a.expirationDate) : null;
+            const bDate = b.expirationDate ? new Date(b.expirationDate) : null;
+            if (!aDate && !bDate) return 0;
+            if (!aDate) return 1 * direction;
+            if (!bDate) return -1 * direction;
+            return (aDate.getTime() - bDate.getTime()) * direction;
+        }
+
+        // For name or category: case-insensitive compare
+        if (sortBy === "name" || sortBy === "category") {
+            const aStr = (a[sortBy] || "").toLowerCase();
+            const bStr = (b[sortBy] || "").toLowerCase();
+            if (aStr < bStr) return -1 * direction;
+            if (aStr > bStr) return 1 * direction;
+            return 0;
+        }
+
+        // For numbers (price, quantity)
+        const aVal = a[sortBy] ?? 0;
+        const bVal = b[sortBy] ?? 0;
+        if (aVal < bVal) return -1 * direction;
+        if (aVal > bVal) return 1 * direction;
+        return 0;
+    });
+
   const categories = Array.from(new Set(products.map(p => p.category)));
 
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
 
   const handleSave = async (prod: Omit<Product, "id">) => {
@@ -54,6 +89,15 @@ const Main = () => {
     await refresh();
   };
 
+  const handleSort = (column: typeof  sortBy) => {
+      if (sortBy == column) {
+          setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      } else {
+          setSortBy(column);
+          setSortOrder("asc");
+      }
+  }
+
   return (
       <Container maxWidth="md">
         <Typography variant="h4" align="center" mt={4} mb={2}>Product Inventory</Typography>
@@ -66,6 +110,9 @@ const Main = () => {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onStockToggle={handleStockToggle}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
         />
         <PaginationControl page={page} pageCount={pageCount} onChange={(_, value) => setPage(value)} />
         <MetricsPanel products={products} />

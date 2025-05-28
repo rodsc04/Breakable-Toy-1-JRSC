@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Product } from '../types/Product';
 
-const API_URL = 'http://localhost:9090/products'
+const API_URL = '/products';
 
 export const fetchProducts = async (params?: Record<string, any>) => {
     const res = await axios.get<Product[]>(API_URL, { params });

@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:8080")
+
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -38,5 +40,11 @@ public class ProductController {
     @PutMapping("/{id}/instock")
     public ResponseEntity<Product> updateInstock(@PathVariable Long id) {
         return ResponseEntity.ok(service.markInStock(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Product> deleteProduct(@PathVariable Long id) {
+        service.deleteProduct(id);
+        return ResponseEntity.noContent().build();
     }
 }

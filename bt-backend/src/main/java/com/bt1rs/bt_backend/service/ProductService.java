@@ -46,6 +46,12 @@ public class ProductService {
         return product;
     }
 
+    public void deleteProduct(Long id) {
+        Product product = products.get(id);
+        if (product == null) throw new NoSuchElementException("Product not found");
+        products.remove(id);
+    }
+
     public Product markOutOfStock(Long id) {
         Product product = products.get(id);
         if (product == null) throw new NoSuchElementException("Product not found");
